@@ -1,6 +1,6 @@
 # Playwright learning project
 Example project for experimenting with Playwright testing tool.  
-(sModules use **pytest** framework.)
+(Modules use **pytest** framework.)
 
 ## Installation
 Create a new project and install Playwright through terminal:
