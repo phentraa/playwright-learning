@@ -12,8 +12,6 @@ ALERT_ERROR_MESSAGES = {
     'email': 'Email is in the wrong format.',
 }
 
-ACTUAL_ERROR_KEY = 'name'
-
 # TESTS ##############################################################################################################x
 
 def test_home_correct_title(page: Page):
@@ -23,7 +21,8 @@ def test_home_correct_title(page: Page):
 
 def test_home_submit_button_available(page: Page):
     page.goto(URL)
-    expect(page.get_by_text('Submit', exact=True)).to_be_enabled()
+    # expect(page.get_by_text('Submit', exact=True)).to_be_enabled()
+    expect(page.get_by_role('button', name='Submit')).to_be_enabled()
 
 
 @pytest.mark.parametrize(
@@ -36,9 +35,9 @@ def test_home_inputs_available(page: Page, placeholder):
     expect(input_element).to_be_visible()
 
 
-def check_dialog_message(dialog):
-    """Event handler. Used by test following test functions"""
-    assert dialog.message == ALERT_ERROR_MESSAGES[ACTUAL_ERROR_KEY]
+def check_dialog_message(dialog, error_key):
+    """Event handler. Used by following test functions"""
+    assert dialog.message == ALERT_ERROR_MESSAGES[error_key]
     dialog.accept() # Be kell zárni valahogy, mert különben megáll a tesztfuttatás
 
 
@@ -47,8 +46,8 @@ def test_form_send_as_empty(page: Page):
     Before triggering the alert we need to create an event handler for that.
     """
     page.goto(URL)
-    button_submit = page.get_by_text('Submit')
-    page.on('dialog', check_dialog_message)
+    button_submit = page.get_by_role('button', name='Submit')
+    page.on('dialog', lambda dialog: check_dialog_message(dialog, 'name'))
     button_submit.click()
 
 
@@ -63,7 +62,6 @@ def test_form_send_as_empty(page: Page):
     ids=["FirstName only", "LastName only", "FirstName,LastName", "All but Email"]
 )
 def test_form_error_messages(page: Page, testdata, error_key):
-    global ACTUAL_ERROR_KEY
     page.goto(URL)
 
     # Input mezők feltöltése
@@ -71,8 +69,7 @@ def test_form_error_messages(page: Page, testdata, error_key):
         element = page.get_by_placeholder(input_data[0])
         element.fill(input_data[1])
 
-    page.on('dialog', check_dialog_message)
-    ACTUAL_ERROR_KEY = error_key
+    page.on('dialog', lambda dialog: check_dialog_message(dialog, error_key))
     page.get_by_text('Submit').click()
 
 
